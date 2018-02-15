@@ -1,0 +1,211 @@
+
+/////////////////////////////////////////////////////////////////////////////////////
+
+
+/queue tree
+add burst-limit=0 burst-threshold=0 burst-time=0s disabled=no limit-at=5M \
+    max-limit=5M name="2 - CACHE-FULL" packet-mark=proxyfull parent=\
+    global-out priority=1 queue=default
+
+
+////////////////////////////////////////////////////////////////////////////////////
+
+
+/ip firewall mangle
+add action=mark-connection chain=output comment="2-PROXY FULL" disabled=no \
+    dscp=4 new-connection-mark=proxyfull passthrough=yes protocol=tcp src-port=\
+    3128
+add action=mark-packet chain=output comment="" connection-mark=proxyfull \
+    disabled=no new-packet-mark=proxyfull passthrough=yes
+add action=return chain=output comment="" connection-mark=proxyfull disabled=no
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////
+
+/ip firewall nat
+add action=redirect chain=dstnat comment="Redirecionamento do Proxy" disabled=\
+    no dst-port=80 protocol=tcp src-address=10.50.50.0/24 to-ports=3128
+
+
+////////////////////////////////////////////////////////////////////////////////////
+
+
+/ip firewall filter 
+add chain=input action=accept dst-port=3128 protocol=tcp comment="ACEITAR \
+    CONEXOES PROXY" disabled=no 
+
+////////////////////////////////////////////////////////////////////////////////////
+
+
+/ip proxy
+set always-from-cache=yes cache-administrator=webmaster cache-hit-dscp=4 \
+    cache-on-disk=yes enabled=yes max-cache-size=unlimited \
+    max-client-connections=600 max-fresh-time=3d max-server-connections=600 \
+    parent-proxy=0.0.0.0 parent-proxy-port=0 port=3128 serialize-connections=no \
+    src-address=0.0.0.0
+
+///////////////////////////////////////////////////////////////////////////////////
+
+
+/ip proxy access
+add action=allow comment="Portas Para MSN" disabled=no dst-port=1025-65535
+add action=deny comment="" disabled=no path=*ADSAdClient31.dll* redirect-to=\
+    www.flinformatica.com/0800/edu/msn.htm
+add action=deny comment=\
+    "allow CONNECT only to SSL ports 443 [https] and 563 [snews]" disabled=no \
+    dst-port=!443,563 method=CONNECT
+add action=deny comment="" disabled=no path=*ork.user* redirect-to=\
+    www.flinformatica.com/0800/edu/orkut.htm
+add action=deny comment="block telnet & spam e-mail relaying" disabled=no \
+    dst-port=23-25
+
+///////////////////////////////////////////////////////////////////////////////////
+
+
+/ip proxy cache
+add action=deny comment="" disabled=no dst-host=":cgi-bin \\\?"
+add action=deny comment="" disabled=no dst-host=https: path=/
+add action=allow comment="" disabled=no dst-host=http: path=\
+    /www.rjnet.com.br/2velocimetro.php
+add action=allow comment="" disabled=no dst-host=http: path=/www.terra.com.br
+add action=deny comment="" disabled=no dst-host=":cgi-bin \\\\\\\?"
+add action=deny comment="" disabled=no dst-host=https: path=/
+add action=allow comment="" disabled=no dst-host=http: path=\
+    /www.rapidus.com.br/velocidade/
+add action=allow comment="" disabled=no dst-host=http: path=/www.bol.com.br
+add action=allow comment="" disabled=no dst-host=http: path=/www.orkut.com
+add action=allow comment="" disabled=no dst-host=http: path=\
+    /www.autonoma.com.br/medidor/meter.php
+add action=allow comment="" disabled=no dst-host=http: path=\
+    /medidor.brisanet.com.br/
+add action=deny comment="" disabled=no dst-host=https: path=\
+    /portal.directv.com.br
+add action=deny comment="" disabled=no dst-host=http: path=\
+    /chat03.terra.com.br/
+add action=allow comment="" disabled=no dst-host=http*youtube*get_video*
+add action=allow comment="" disabled=no dst-host=http*youtube*video*
+add action=allow comment="" disabled=no dst-host=\
+    "http*youtube*yva_get_video_inf o*"
+add action=allow comment="" disabled=no dst-host="\":\\\\\\\\.flv\$\""
+add action=allow comment="" disabled=no dst-host=http*globo*get_video*
+add action=allow comment="" disabled=no dst-host=http*globo*video*
+add action=allow comment="" disabled=no dst-host=http*googlevideo*get_video*
+add action=allow comment="" disabled=no dst-host=http*googlevideo*video*
+add action=allow comment="" disabled=no dst-host=http*video.google*get_video*
+add action=allow comment="" disabled=no dst-host=http*video.google*video*
+add action=allow comment="" disabled=no dst-host=http*videoplay*
+add action=allow comment="" disabled=no dst-host=http*74.125.15.83*get_video*
+add action=allow comment="" disabled=no dst-host=: path=:.swf*
+add action=deny comment="" disabled=no dst-host=":cgi-bin \\\?"
+add action=deny comment="" disabled=no dst-host=https: path=/
+add action=deny comment="" disabled=no dst-host=":cgi-bin \\\?"
+add action=deny comment="" disabled=no dst-host=start.com.br
+add action=deny comment="" disabled=no dst-host=http: path=/speed
+add action=deny comment="" disabled=no dst-host=https: path=/
+add action=allow comment="" disabled=no dst-host=":\\.exe\$"
+add action=allow comment="" disabled=no dst-host=":\\.zip\$"
+add action=allow comment="" disabled=no dst-host=":\\.mpeg\$"
+add action=allow comment="" disabled=no dst-host=":\\.avi\$"
+add action=allow comment="" disabled=no dst-host=":\\.pdf\$"
+add action=allow comment="" disabled=no dst-host=":\\.css\$"
+add action=allow comment="" disabled=no dst-host=":\\.rar\$"
+add action=allow comment="" disabled=no dst-host=":\\.mov\$"
+add action=allow comment="" disabled=no dst-host=":\\.mpg\$"
+add action=allow comment="" disabled=no dst-host=":\\.iso\$"
+add action=allow comment="" disabled=no dst-host=":\\.bin\$"
+add action=allow comment="" disabled=no dst-host=":\\.dat\$"
+add action=allow comment="" disabled=no dst-host=www.terra.com.br
+add action=deny comment="" disabled=no dst-host=":cgi-bin \\\\\\\?"
+add action=deny comment="" disabled=no dst-host=https:/
+add action=allow comment="" disabled=no dst-host=http: path=\
+    /www.rapidus.com.br/velocidade/
+add action=allow comment="" disabled=no dst-host=http: path=/www.bol.com.br
+add action=allow comment="" disabled=no dst-host=http: path=/www.orkut.com
+add action=allow comment="" disabled=no dst-host=http: path=\
+    /www.autonoma.com.br/medidor/meter.php
+add action=allow comment="" disabled=no dst-host=http: path=\
+    /medidor.brisanet.com.br/
+add action=deny comment="" disabled=no dst-host=https: path=\
+    /portal.directv.com.br
+add action=deny comment="" disabled=no dst-host=http://chat03.terra.com.br/
+add action=allow comment="" disabled=no dst-host=http*youtube*get_video*
+add action=allow comment="" disabled=no dst-host=http*youtube*video*
+add action=allow comment="" disabled=no dst-host=\
+    "http*youtube*yva_get_video_inf o*"
+add action=allow comment="" disabled=no dst-host="\":\\\\\\\\.flv\$\""
+add action=allow comment="" disabled=no dst-host=http*globo*get_video*
+add action=allow comment="" disabled=no dst-host=http*globo*video*
+add action=allow comment="" disabled=no dst-host=http*googlevideo*get_video*
+add action=allow comment="" disabled=no dst-host=http*googlevideo*video*
+add action=allow comment="" disabled=no dst-host=http*video.google*get_video*
+add action=allow comment="" disabled=no dst-host=http*video.google*video*
+add action=allow comment="" disabled=no dst-host=http*videoplay*
+add action=allow comment="" disabled=no dst-host=http*74.125.15.83*get_video*
+add action=allow comment="" disabled=no dst-host=::.swf* path=""
+add action=deny comment="" disabled=no dst-host=":cgi-bin \\\?"
+add action=deny comment="" disabled=no dst-host=":cgi-bin \\\?"
+add action=deny comment="" disabled=no dst-host=start.com.br
+add action=deny comment="" disabled=no dst-host=http://speed path=""
+add action=allow comment="" disabled=no dst-host=":\\.exe\$"
+add action=allow comment="" disabled=no dst-host=":\\.zip\$"
+add action=allow comment="" disabled=no dst-host=":\\.mpeg\$"
+add action=allow comment="" disabled=no dst-host=":\\.avi\$"
+add action=allow comment="" disabled=no dst-host=":\\.pdf\$"
+add action=allow comment="" disabled=no dst-host=":\\.css\$"
+add action=allow comment="" disabled=no dst-host=":\\.rar\$"
+add action=allow comment="" disabled=no dst-host=":\\.mov\$"
+add action=allow comment="" disabled=no dst-host=":\\.mpg\$"
+add action=allow comment="" disabled=no dst-host=":\\.iso\$"
+add action=allow comment="" disabled=no dst-host=":\\.bin\$"
+add action=allow comment="" disabled=no dst-host=":\\.dat\$"
+
+///////////////////////////////////////////////////////////////////////////////
+
+
+/ip firewall address-list
+add address=69.147.95.0/24 comment="\"\"\"\"YAHOO MAIL\"\"\"\"" disabled=no \
+    list=nobalance
+add address=209.191.106.0/24 comment="\"\"\"\"YAHOO MAIL\"\"\"\"" disabled=no \
+    list=nobalance
+add address=74.6.228.0/24 comment="\"\"\"\"YAHOO MAIL\"\"\"\"" disabled=no \
+    list=nobalance
+add address=98.136.131.0/24 comment="\"\"\"\"YAHOO MAIL\"\"\"\"" disabled=no \
+    list=nobalance
+add address=200.143.37.0/24 comment="\"\"\"\"WEBMOTORS\"\"\"\"" disabled=no \
+    list=nobalance
+add address=65.54.0.0/16 comment=MSN1 disabled=no list=nobalance
+add address=207.46.0.0/16 comment=MSN2 disabled=no list=nobalance
+add address=64.4.0.0/16 comment=MSN3 disabled=no list=nobalance
+add address=200.143.0.0/16 comment=Pagdigital disabled=no list=nobalance
+add address=201.88.0.0/16 comment=f2b disabled=no list=nobalance
+add address=200.201.0.0/16 comment="caixa economica" disabled=no list=\
+    nobalance
+add address=170.66.0.0/16 comment="bb do brasil" disabled=no list=nobalance
+add address=200.155.0.0/16 comment=bradesco disabled=no list=nobalance
+add address=200.196.0.0/16 comment=itau disabled=no list=nobalance
+add address=200.208.0.0/16 comment=sudameris disabled=no list=nobalance
+add address=200.220.0.0/16 comment=santander disabled=no list=nobalance
+add address=201.63.0.0/16 comment="wwws bradesco" disabled=no list=nobalance
+add address=65.55.0.0/16 comment=MSN4 disabled=no list=nobalance
+add address=74.52.0.0/16 comment="caixa economica" disabled=no list=nobalance
+add address=74.125.0.0/16 comment="caixa economica" disabled=no list=nobalance
+add address=174.133.0.0/16 comment="caixa economica" disabled=no list=\
+    nobalance
+add address=200.219.137.0/24 comment="" disabled=no list=nobalance
+add address=200.252.8.0/24 comment="" disabled=no list=nobalance
+add address=201.2.207.0/24 comment="" disabled=no list=nobalance
+add address=200.196.226.0/24 comment="" disabled=no list=nobalance
+add address=201.24.72.0/24 comment="" disabled=no list=nobalance
+add address=78.46.46.139 comment="" disabled=no list=nobalance
+
+
+/////////////////////////////////////////////////////////////////////////////////
+
+
+/ip firewall nat
+add action=accept chain=dstnat comment=\
+    "\"\"\"\"\"\"SERVI\C7OS NOBRES FORA DO PROXY\"\"\"\"\"\"" disabled=no \
+    dst-address-list=nobalance dst-port=80 protocol=tcp
+
+//////////////////////////////////////////////////////////////////////////////////
